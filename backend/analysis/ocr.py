@@ -52,7 +52,22 @@ try:
     RAPIDOCR_AVAILABLE = True
     logger.info("RapidOCR (ONNX) engine initialized successfully")
 except Exception as e:
-    logger.debug(f"RapidOCR not available: {e}")
+    logger.debug(f"RapidOCR not available at startup: {e}")
+
+
+def _get_rapid_engine():
+    """Retrieve or initialize RapidOCR engine on demand."""
+    global rapid_engine, RAPIDOCR_AVAILABLE
+    if rapid_engine is not None:
+        return rapid_engine
+    try:
+        from rapidocr_onnxruntime import RapidOCR
+        rapid_engine = RapidOCR()
+        RAPIDOCR_AVAILABLE = True
+        return rapid_engine
+    except Exception as e:
+        logger.warning(f"Could not initialize RapidOCR: {e}")
+        return None
 
 
 def _load_image(path: str):
@@ -248,10 +263,11 @@ def extract_ocr(image_path: str) -> Dict[str, Any]:
         except Exception as e:
             logger.warning(f"Tesseract extraction failed: {e}")
 
-    # Strategy 2: RapidOCR
-    if RAPIDOCR_AVAILABLE and rapid_engine is not None:
+    # Strategy 2: RapidOCR (ONNX)
+    engine = _get_rapid_engine()
+    if engine is not None:
         try:
-            results, _ = rapid_engine(image_path)
+            results, _ = engine(image_path)
             if results:
                 lines = [r[1] for r in results if r[1]]
                 confs = [float(r[2]) * 100 for r in results if len(r) > 2 and r[2] is not None]
@@ -270,6 +286,19 @@ def extract_ocr(image_path: str) -> Dict[str, Any]:
                     "address": _extract_address(raw_text),
                     "confidence": round(avg_conf, 1),
                     "error": None,
+                }
+            else:
+                return {
+                    "available": True,
+                    "engine": "RapidOCR",
+                    "raw_text": "",
+                    "document_type": "UNKNOWN",
+                    "name": None,
+                    "dob": None,
+                    "id_number": None,
+                    "address": None,
+                    "confidence": 0.0,
+                    "error": "No text detected in document image",
                 }
         except Exception as e:
             logger.error(f"RapidOCR extraction failed: {e}")

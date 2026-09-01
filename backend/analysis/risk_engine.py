@@ -25,8 +25,22 @@ def _ocr_signal(ocr: Dict[str, Any]) -> tuple[Dict, List[Dict]]:
 
     if not ocr.get("available", False):
         status = NOT_AVAILABLE
-        details = ocr.get("error", "OCR not available")
-        signal_score = 0
+        details = ocr.get("error", "OCR text extraction unavailable")
+        reasons.append({
+            "reason": f"OCR text extraction unavailable — document text could not be verified",
+            "impact": -15,
+            "category": "OCR",
+        })
+        return (
+            {
+                "status": status,
+                "score": 0,
+                "confidence": 0.0,
+                "document_type": "UNKNOWN",
+                "details": details,
+            },
+            reasons,
+        )
     else:
         confidence = ocr.get("confidence", 0.0)
         raw_text = ocr.get("raw_text", "")
