@@ -5,7 +5,7 @@ import {
   Shield, Eye, FileSearch, Database, Cpu, Layers,
   Activity, AlertCircle, Download, User, Camera, TestTube2
 } from 'lucide-react';
-import { verifyDocument } from '../api/client';
+import { verifyDocument, API_BASE } from '../api/client';
 import SignalBadge from '../components/SignalBadge';
 
 // ─── Pipeline steps (shown during analysis) ─────────────────────────────────
@@ -343,7 +343,7 @@ export default function ScanVerify() {
   const loadDemoFile = async (filename, label) => {
     try {
       // Demo files served from backend test_data
-      const response = await fetch(`http://localhost:8000/demo/${filename}`);
+      const response = await fetch(`${API_BASE}/demo/${filename}`);
       if (!response.ok) throw new Error('Demo file not available');
       const blob = await response.blob();
       const file = new File([blob], filename, { type: blob.type || 'image/png' });

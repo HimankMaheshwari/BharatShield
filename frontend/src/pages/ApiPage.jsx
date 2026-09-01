@@ -1,4 +1,5 @@
 import { Shield, Code2, Zap, Lock, GitBranch, ExternalLink } from 'lucide-react';
+import { API_BASE } from '../api/client';
 
 const ENDPOINT_CARD = ({ method, path, desc, body }) => (
   <div className="bg-navy-900 border border-navy-700 rounded-lg p-4">
@@ -24,7 +25,7 @@ export default function ApiPage() {
       <div>
         <h2 className="text-white font-bold text-lg">API & Integrations</h2>
         <p className="text-slate-400 text-sm mt-1">
-          REST API running at <code className="text-indigo-400 font-mono">http://localhost:8000</code>
+          REST API running at <code className="text-indigo-400 font-mono">{API_BASE}</code>
         </p>
       </div>
 
